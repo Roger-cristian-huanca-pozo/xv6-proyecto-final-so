@@ -18,7 +18,6 @@ int
 fetchint(uint addr, int *ip)
 {
   struct proc *curproc = myproc();
-
   if(addr >= curproc->sz || addr+4 > curproc->sz)
     return -1;
   *ip = *(int*)(addr);
@@ -82,6 +81,39 @@ argstr(int n, char **pp)
   return fetchstr(addr, pp);
 }
 
+// ============ INICIO DE NUESTRAS MODIFICACIONES ============
+
+// Variable global para activar/desactivar el tracing
+int syscall_tracing = 0;
+
+// Nombres de todas las syscalls
+char* syscall_names[] = {
+  [0] "null",
+  [SYS_fork]    "fork",
+  [SYS_exit]    "exit",
+  [SYS_wait]    "wait",
+  [SYS_pipe]    "pipe",
+  [SYS_read]    "read",
+  [SYS_kill]    "kill",
+  [SYS_exec]    "exec",
+  [SYS_fstat]   "fstat",
+  [SYS_chdir]   "chdir",
+  [SYS_dup]     "dup",
+  [SYS_getpid]  "getpid",
+  [SYS_sbrk]    "sbrk",
+  [SYS_sleep]   "sleep",
+  [SYS_uptime]  "uptime",
+  [SYS_open]    "open",
+  [SYS_write]   "write",
+  [SYS_mknod]   "mknod",
+  [SYS_unlink]  "unlink",
+  [SYS_link]    "link",
+  [SYS_mkdir]   "mkdir",
+  [SYS_close]   "close",
+  [SYS_trace]   "trace",  // La que creamos
+};
+
+// Declaraciones de funciones de syscall
 extern int sys_chdir(void);
 extern int sys_close(void);
 extern int sys_dup(void);
@@ -103,7 +135,9 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
+extern int sys_trace(void);  // Nueva syscall
 
+// Array que mapea números de syscall a funciones
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
 [SYS_exit]    sys_exit,
@@ -126,7 +160,63 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_trace]   sys_trace,  // Agregar aquí
 };
+
+// Función auxiliar para mostrar argumentos - VERSIÓN MEJORADA
+void print_syscall_args(int num, struct proc* p) {
+  switch(num) {
+    case SYS_fork:
+    case SYS_getpid:
+    case SYS_uptime:
+    case SYS_wait:
+      cprintf("()");
+      break;
+      
+    case SYS_exit:
+      cprintf("(status=%d)", p->tf->ebx);
+      break;
+      
+    case SYS_kill:
+      cprintf("(pid=%d)", p->tf->ebx);
+      break;
+      
+    case SYS_read:
+    case SYS_write:
+      // Solo mostrar fd y tamaño
+      cprintf("(fd=%d, size=%d)", p->tf->ebx, p->tf->edx);
+      break;
+      
+    case SYS_open:
+      cprintf("(path=0x%x, mode=%d)", p->tf->ebx, p->tf->ecx);
+      break;
+      
+    case SYS_close:
+    case SYS_dup:
+      cprintf("(fd=%d)", p->tf->ebx);
+      break;
+      
+    case SYS_sleep:
+      cprintf("(ticks=%d)", p->tf->ebx);
+      break;
+      
+    case SYS_sbrk:
+      cprintf("(n=%d)", p->tf->ebx);
+      break;
+      
+    case SYS_exec:
+      cprintf("(path=0x%x, argv=0x%x)", p->tf->ebx, p->tf->ecx);
+      break;
+      
+    case SYS_chdir:
+      cprintf("(path=0x%x)", p->tf->ebx);
+      break;
+      
+    default:
+      cprintf("(...)");
+  }
+}
+
 
 void
 syscall(void)
@@ -135,8 +225,23 @@ syscall(void)
   struct proc *curproc = myproc();
 
   num = curproc->tf->eax;
+  
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-    curproc->tf->eax = syscalls[num]();
+    // Ejecutar la syscall PRIMERO
+    int result = syscalls[num]();
+    curproc->tf->eax = result;
+    
+    // Mostrar logging DESPUÉS si está activado
+    // Excluir: trace, shell (sh), init
+    if(syscall_tracing && 
+       num != SYS_trace && 
+       syscall_names[num] &&
+       curproc->pid > 2) {  // Solo procesos con PID > 2
+      
+      cprintf("[%d] %s", curproc->pid, syscall_names[num]);
+      print_syscall_args(num, curproc);
+      cprintf(" = %d\n", result);
+    }
   } else {
     cprintf("%d %s: unknown sys call %d\n",
             curproc->pid, curproc->name, num);
