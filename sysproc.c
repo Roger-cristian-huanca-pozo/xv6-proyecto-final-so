@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+extern int syscall_tracing;  // Declarada en syscall.c
 
 int
 sys_fork(void)
@@ -88,4 +89,19 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+// sys_trace: activa/desactiva tracing de syscalls
+int
+sys_trace(void)
+{
+  int n;
+  
+  if(argint(0, &n) < 0)
+    return -1;
+  
+  // Activa/desactiva el tracing global
+  extern int syscall_tracing;  // Declara la variable de syscall.c
+  syscall_tracing = n;
+  
+  return 0;
 }
