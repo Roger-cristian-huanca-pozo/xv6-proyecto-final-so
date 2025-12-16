@@ -17,6 +17,7 @@ git clone https://github.com/Roger-cristian-huanca-pozo/xv6-proyecto-final-so.gi
 cd xv6-proyecto-final-so
 
 # Compilar
+make clean
 make
 
 # Ejecutar en QEMU
