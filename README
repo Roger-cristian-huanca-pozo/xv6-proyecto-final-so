@@ -7,12 +7,14 @@ Nicolas Arturo Marin Gonzales           2022 - 119082
 
 ## Descripción del proyecto
 Modificación del kernel xv6 para implementar un comando `strace` que muestra las llamadas al sistema con sus parámetros, similar al comando strace de Linux.
+Con implementación de nuevas funcionalidades a nivel de kernel y espacio de usuario. El proyecto incluye instrumentación de llamadas al sistema, comandos de monitoreo de procesos y métricas de planificación,
+demostrando conceptos fundamentales de sistemas operativos.
+
 
 ## Cómo compilar y ejecutar
-```bash
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/xv6-con-strace.git
-cd xv6-con-strace
+git clone https://github.com/Roger-cristian-huanca-pozo/xv6-proyecto-final-so.git
+cd xv6-proyecto-final-so
 
 # Compilar
 make
@@ -20,17 +22,90 @@ make
 # Ejecutar en QEMU
 make qemu
 
+Entregable 1: System Call Tracing (strace)
+
+    - Comando: strace on/off - Activa/desactiva logging de llamadas al sistema en tiempo real
+
+    - Muestra: Nombre de syscall, PID del proceso, parámetros básicos y valor de retorno
+
+    - Beneficio: Permite depurar y entender el comportamiento interno del sistema
+
 # Dentro de xv6:
 $ strace on    # Activar tracing
 $ ls           # Ver llamadas al sistema
 $ strace off   # Desactivar tracing
-```
 
 
 ## Archivos modificados
-- `syscall.c` - Impresión de syscalls
+- `syscall.c` - Impresión de syscall
 - `syscall.h` - Números de syscall
 - `user.h` - Declaración de strace
+- `sysproc.c` - Syscall trace() para activar/desactivar logging
 - `strace.c` - Comando de usuario
+- `usys.S` - Entrada SYSCALL(trace)
 - `Makefile` - Agregar _strace
 
+Entregable 2: Comandos de Monitoreo
+
+    uptimex (Uptime extendido con métricas del sistema):
+
+        - Tiempo en ticks y segundos con formato HH:MM:SS
+
+        - Número de procesos activos en el sistema
+
+        - Contador de cambios de contexto (métrica de planificación)
+
+        - Límite máximo de procesos soportados
+
+    psinfo (Información detallada de procesos):
+
+        - Lista completa de procesos con PID, estado, nombre y memoria
+
+        - Estados: RUNNING, SLEEPING, RUNNABLE, ZOMBIE
+
+        - Consulta individual: psinfo <PID> para información específica
+
+        - Tamaño de memoria de cada proceso en bytes
+
+
+# Comandos de prueba:
+$ uptimex            # Tiempo del sistema y métricas de planificación
+$ psinfo             # Lista completa de procesos activos
+$ psinfo 1           # Información detallada del proceso init (PID 1)
+$ psinfo 2           # Información del shell principal (PID 2)
+
+# Demostración de funcionalidad
+$ uptimex            # Anotar cambios de contexto iniciales
+$ ls                 # Ejecutar comandos para generar actividad
+$ cat README         # Más actividad del sistema
+$ uptimex            # Ver incremento en cambios de contexto
+
+## Archivos modificados
+
+    - kernel/proc.c - Contador global de cambios de contexto
+
+    - kernel/proc.h - Estructura struct psinfo para transferir información
+
+    - kernel/sysproc.c - Nuevas syscalls: getnproc(), getprocinfo(), getcontextsw()
+
+    - kernel/syscall.h - Definiciones: SYS_getnproc, SYS_getprocinfo, SYS_getcontextsw
+
+    - kernel/syscall.c - Registro de nuevas syscalls y nombres
+
+    - user/user.h - Prototipos y estructura psinfo para usuario
+
+    - user/usys.S - SYSCALL(getnproc), SYSCALL(getprocinfo), SYSCALL(getcontextsw)
+
+    - user/uptimex.c - Comando uptime extendido con cambios de contexto
+
+    - user/psinfo.c - Comando información de procesos
+
+    - Makefile - Agregar _uptimex y _psinfo
+ 
+Recursos y Referencias
+
+    XV6 Documentation - Documentación oficial
+
+    XV6 Book - Libro de referencia
+
+    GitHub Repository - Código fuente original
