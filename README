@@ -83,23 +83,23 @@ $ uptimex            # Ver incremento en cambios de contexto
 
 ## Archivos modificados
 
-    - kernel/proc.c - Contador global de cambios de contexto
+    - proc.c - Contador global de cambios de contexto
 
-    - kernel/proc.h - Estructura struct psinfo para transferir información
+    - proc.h - Estructura struct psinfo para transferir información
 
-    - kernel/sysproc.c - Nuevas syscalls: getnproc(), getprocinfo(), getcontextsw()
+    - sysproc.c - Nuevas syscalls: getnproc(), getprocinfo(), getcontextsw()
 
-    - kernel/syscall.h - Definiciones: SYS_getnproc, SYS_getprocinfo, SYS_getcontextsw
+    - syscall.h - Definiciones: SYS_getnproc, SYS_getprocinfo, SYS_getcontextsw
 
-    - kernel/syscall.c - Registro de nuevas syscalls y nombres
+    - syscall.c - Registro de nuevas syscalls y nombres
 
-    - user/user.h - Prototipos y estructura psinfo para usuario
+    - user.h - Prototipos y estructura psinfo para usuario
 
-    - user/usys.S - SYSCALL(getnproc), SYSCALL(getprocinfo), SYSCALL(getcontextsw)
+    - usys.S - SYSCALL(getnproc), SYSCALL(getprocinfo), SYSCALL(getcontextsw)
 
-    - user/uptimex.c - Comando uptime extendido con cambios de contexto
+    - uptimex.c - Comando uptime extendido con cambios de contexto
 
-    - user/psinfo.c - Comando información de procesos
+    - psinfo.c - Comando información de procesos
 
     - Makefile - Agregar _uptimex y _psinfo
  
