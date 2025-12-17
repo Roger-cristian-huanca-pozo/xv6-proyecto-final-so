@@ -56,3 +56,12 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+// Estructura para pasar información de proceso a espacio de usuario
+// Usada por la syscall getprocinfo()
+struct psinfo {
+  int pid;           // ID del proceso
+  int ppid;          // ID del proceso padre
+  char state[16];    // Estado como string
+  char name[16];     // Nombre del proceso
+  uint sz;           // Tamaño de memoria en bytes
+};

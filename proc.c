@@ -6,7 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-
+int context_switches = 0;  // Contador global de cambios de contexto
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -124,7 +124,7 @@ userinit(void)
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
   p = allocproc();
-  
+
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
@@ -275,7 +275,7 @@ wait(void)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-  
+
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
@@ -325,7 +325,7 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -344,6 +344,7 @@ scheduler(void)
       p->state = RUNNING;
 
       swtch(&(c->scheduler), p->context);
+      context_switches++;  // Incrementar contador de cambios de contexto
       switchkvm();
 
       // Process is done running for now.

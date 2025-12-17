@@ -1,3 +1,12 @@
+// Estructura para información de proceso (DEBE COINCIDIR con kernel/proc.h)
+struct psinfo {
+  int pid;
+  int ppid;
+  char state[16];
+  char name[16];
+  uint sz;
+};
+
 struct stat;
 struct rtcdate;
 
@@ -24,6 +33,9 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int trace(int);
+int getnproc(void);
+int getprocinfo(int, struct psinfo*);
+int getcontextsw(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -38,3 +50,4 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+
