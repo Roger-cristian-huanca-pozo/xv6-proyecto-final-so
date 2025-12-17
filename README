@@ -8,7 +8,8 @@ Nicolas Arturo Marin Gonzales           2022 - 119082
 ## Descripción del proyecto
 Modificación del kernel xv6 para implementar un comando `strace` que muestra las llamadas al sistema con sus parámetros, similar al comando strace de Linux.
 Con implementación de nuevas funcionalidades a nivel de kernel y espacio de usuario. El proyecto incluye instrumentación de llamadas al sistema, comandos de monitoreo de procesos y métricas de planificación,
-demostrando conceptos fundamentales de sistemas operativos.
+demostrando conceptos fundamentales de sistemas operativos,Implementar un sistema de contabilización que rastree el uso de cada llamada al sistema en tiempo de ejecución, proporcionando métricas de uso para 
+análisis de rendimiento y comportamiento del sistema.
 
 
 ## Cómo compilar y ejecutar
@@ -102,7 +103,43 @@ $ uptimex            # Ver incremento en cambios de contexto
     - psinfo.c - Comando información de procesos
 
     - Makefile - Agregar _uptimex y _psinfo
- 
+
+ENTREGABLE 3: CONTADOR DE INVOCACIONES DE SYSCALLS
+
+Características Principales
+
+    - Contadores por syscall: Cada llamada al sistema mantiene un contador individual
+
+    Consultas flexibles:
+
+    - Resumen completo de todas las syscalls
+
+    - Consulta individual por número de syscall
+
+    - Persistencia en kernel: Los contadores se mantienen durante toda la ejecución del sistema
+
+    - Interfaz simple: Comando syscount fácil de usar
+Uso:
+  syscount           - Mostrar todas las syscalls con sus contadores
+  syscount <número>  - Mostrar contador de una syscall específica
+  
+# 1. Ver resumen completo de syscalls
+$ syscount
+
+# 2. Consultar syscall específica
+$ syscount 1    # fork()
+$ syscount 16   # write()
+$ syscount 26   # getsyscallcount()
+
+# 3. Generar actividad y ver incrementos
+$ syscount 16   # Anotar valor inicial de write
+$ ls
+$ cat README
+$ syscount 16   # Ver incremento después de actividad
+
+# 4. Comparar uso de diferentes syscalls
+$ syscount      # Ver distribución completa
+
 Recursos y Referencias
 
     XV6 Documentation - Documentación oficial
